@@ -217,7 +217,8 @@ export default function MusicPlayer({ isOpen, onClose }: MusicPlayerProps) {
   };
 
   const handleSpotifyLogin = () => {
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=ff536d252c90438abe66b2655a84bd6d&response_type=code&redirect_uri=${encodeURIComponent('http://localhost:3000/api/auth/spotify/callback')}&scope=${encodeURIComponent('user-read-private user-read-email playlist-read-private playlist-read-collaborative')}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://satocci.vercel.app';
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=ff536d252c90438abe66b2655a84bd6d&response_type=code&redirect_uri=${encodeURIComponent(`${baseUrl}/api/auth/spotify/callback`)}&scope=${encodeURIComponent('user-read-private user-read-email playlist-read-private playlist-read-collaborative')}`;
     window.location.href = authUrl;
   };
 

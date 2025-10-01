@@ -111,7 +111,8 @@ class SpotifyAPI {
 
   // Generate Spotify OAuth URL
   generateAuthURL(): string {
-    const redirectUri = encodeURIComponent('http://localhost:3000/api/auth/spotify/callback');
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://satocci.vercel.app';
+    const redirectUri = encodeURIComponent(`${baseUrl}/api/auth/spotify/callback`);
     const scopes = encodeURIComponent('user-read-private user-read-email playlist-read-private playlist-read-collaborative');
     
     return `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&response_type=code&redirect_uri=${redirectUri}&scope=${scopes}`;
@@ -120,6 +121,7 @@ class SpotifyAPI {
   // Exchange authorization code for access token
   async exchangeCodeForToken(code: string): Promise<string | null> {
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://satocci.vercel.app';
       const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
@@ -129,7 +131,7 @@ class SpotifyAPI {
         body: new URLSearchParams({
           grant_type: 'authorization_code',
           code,
-          redirect_uri: 'http://localhost:3000/api/auth/spotify/callback',
+          redirect_uri: `${baseUrl}/api/auth/spotify/callback`,
         }),
       });
 
