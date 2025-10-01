@@ -17,6 +17,7 @@ import {
   SkipForward,
   LogIn
 } from 'lucide-react';
+import type { SpotifyTrack } from '@/lib/spotify';
 
 interface Track {
   id: string;
@@ -180,7 +181,7 @@ export default function MusicPlayer({ isOpen, onClose }: MusicPlayerProps) {
       const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
       
-      const tracks: Track[] = data.tracks.map((track: any) => ({
+      const tracks: Track[] = data.tracks.map((track: SpotifyTrack) => ({
         id: track.id,
         name: track.name,
         artist: track.artists[0]?.name || 'Unknown Artist',

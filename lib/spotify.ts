@@ -97,7 +97,7 @@ class SpotifyAPI {
       );
 
       const data = await response.json();
-      return data.items?.map((item: any) => item.track).filter((track: any) => track) || [];
+      return data.items?.map((item: { track: SpotifyTrack }) => item.track).filter((track: SpotifyTrack | null) => track) || [];
     } catch (error) {
       console.error('Error fetching playlist tracks:', error);
       return [];
