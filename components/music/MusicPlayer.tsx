@@ -13,8 +13,6 @@ import {
   Music, 
   Search, 
   List,
-  SkipBack,
-  SkipForward,
   LogIn
 } from 'lucide-react';
 import type { SpotifyTrack } from '@/lib/spotify';
@@ -62,6 +60,7 @@ export default function MusicPlayer({ isOpen, onClose }: MusicPlayerProps) {
     if (isLoggedIn && activeTab === 'playlists') {
       fetchUserPlaylists();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, activeTab]);
 
   const checkLoginStatus = async () => {
@@ -96,7 +95,7 @@ export default function MusicPlayer({ isOpen, onClose }: MusicPlayerProps) {
       if (data.playlists && data.playlists.length > 0) {
         // Fetch tracks for each playlist
         const playlistsWithTracks = await Promise.all(
-          data.playlists.slice(0, 10).map(async (playlist: any) => {
+          data.playlists.slice(0, 10).map(async (playlist: { id: string; name: string }) => {
             try {
               const tracksResponse = await fetch(
                 `/api/spotify/playlist-tracks?playlistId=${playlist.id}`
