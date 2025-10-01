@@ -25,8 +25,9 @@ export async function GET(request: NextRequest) {
     // Store the token in a cookie or session
     const response = NextResponse.redirect(new URL('/blogs', request.url));
     response.cookies.set('spotify_token', accessToken, {
-      httpOnly: true,
+      httpOnly: false, // Set to false so client-side can read it
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 3600, // 1 hour
     });
 
