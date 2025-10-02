@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/Home/NavBar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { MusicProvider } from "@/contexts/MusicContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,8 +88,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NavBar />
-          {children}
+          <MusicProvider>
+            <NavBar />
+            {children}
+          </MusicProvider>
         </ThemeProvider>
       </body>
     </html>

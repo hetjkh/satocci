@@ -54,6 +54,7 @@ export default function Navbar() {
 
           <Link href="/product" className="hover:text-primary transition">PRODUCT</Link>
           <Link href="/signup" className="hover:text-primary transition">SIGN UP</Link>
+          <Link href="/linkedin" className="hover:text-primary transition">LINKEDIN</Link>
           <Link href="/blogs" className="hover:text-primary transition">BLOGS</Link>
         </div>
 
@@ -100,6 +101,7 @@ export default function Navbar() {
 
           <Link href="/product" className="block">PRODUCT</Link>
           <Link href="/signup" className="block">SIGN UP</Link>
+          <Link href="/linkedin" className="block">LINKEDIN</Link>
           <Link href="/blogs" className="block">BLOGS</Link>
 
           <div className="flex items-center gap-3 mt-6">
