@@ -42,7 +42,21 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingTrending, setIsLoadingTrending] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<{
+    totalCalls: number;
+    successfulCalls: number;
+    failedCalls: number;
+    blockedCalls: number;
+    averageResponseTime: number;
+    startTime: number;
+    errors: string[];
+    responseTimes: number[];
+    currentCall?: number;
+    totalTime?: number;
+    successRate?: number;
+    blockRate?: number;
+    callsPerSecond?: number;
+  } | null>(null);
 
   // Load trending music on mount
   useEffect(() => {
@@ -466,7 +480,7 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
                       <div className="text-sm text-orange-700">Blocked Calls</div>
                     </div>
                     <div className="bg-blue-100 p-3 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{testResults.successRate.toFixed(1)}%</div>
+                      <div className="text-2xl font-bold text-blue-600">{testResults.successRate?.toFixed(1) || '0.0'}%</div>
                       <div className="text-sm text-blue-700">Success Rate</div>
                     </div>
                   </div>
@@ -474,11 +488,11 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-foreground/70">Total Time:</span>
-                      <span className="ml-2 font-semibold">{Math.round(testResults.totalTime / 1000)}s</span>
+                      <span className="ml-2 font-semibold">{Math.round((testResults.totalTime || 0) / 1000)}s</span>
                     </div>
                     <div>
                       <span className="text-foreground/70">Calls/Second:</span>
-                      <span className="ml-2 font-semibold">{testResults.callsPerSecond.toFixed(2)}</span>
+                      <span className="ml-2 font-semibold">{(testResults.callsPerSecond || 0).toFixed(2)}</span>
                     </div>
                     <div>
                       <span className="text-foreground/70">Avg Response:</span>
@@ -486,7 +500,7 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
                     </div>
                     <div>
                       <span className="text-foreground/70">Block Rate:</span>
-                      <span className="ml-2 font-semibold">{testResults.blockRate.toFixed(1)}%</span>
+                      <span className="ml-2 font-semibold">{(testResults.blockRate || 0).toFixed(1)}%</span>
                     </div>
                   </div>
 
