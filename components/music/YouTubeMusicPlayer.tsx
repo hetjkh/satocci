@@ -41,6 +41,8 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
   const [activeTab, setActiveTab] = useState<'search' | 'trending'>('search');
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingTrending, setIsLoadingTrending] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResults, setTestResults] = useState<any>(null);
 
   // Load trending music on mount
   useEffect(() => {
@@ -93,6 +95,99 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
     }, 500); // Wait 500ms after user stops typing
 
     setSearchTimeout(timeout);
+  };
+
+  // Test function to make 500 API calls
+  const runAPILimitationTest = async () => {
+    setIsTesting(true);
+    setTestResults(null);
+    
+    const testQueries = [
+      'music', 'song', 'audio', 'track', 'melody', 'rhythm', 'beat', 'tune', 'sound', 'vocal',
+      'instrumental', 'classical', 'rock', 'pop', 'jazz', 'blues', 'country', 'hip hop', 'rap', 'electronic',
+      'dance', 'reggae', 'folk', 'soul', 'funk', 'disco', 'punk', 'metal', 'indie', 'alternative',
+      'acoustic', 'piano', 'guitar', 'violin', 'drums', 'bass', 'saxophone', 'trumpet', 'flute', 'cello',
+      'orchestra', 'choir', 'singer', 'band', 'group', 'artist', 'musician', 'composer', 'producer', 'dj'
+    ];
+
+    const results = {
+      totalCalls: 0,
+      successfulCalls: 0,
+      failedCalls: 0,
+      blockedCalls: 0,
+      averageResponseTime: 0,
+      startTime: Date.now(),
+      errors: [] as string[],
+      responseTimes: [] as number[]
+    };
+
+    console.log('🚀 Starting API limitation test with 500 calls...');
+    
+    for (let i = 0; i < 500; i++) {
+      try {
+        const query = testQueries[i % testQueries.length] + ' ' + (i + 1);
+        const startTime = Date.now();
+        
+        const response = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
+        
+        results.totalCalls++;
+        results.responseTimes.push(responseTime);
+        
+        if (response.ok) {
+          results.successfulCalls++;
+          console.log(`✅ Call ${i + 1}/500 successful (${responseTime}ms)`);
+        } else {
+          results.failedCalls++;
+          if (response.status === 429 || response.status === 403) {
+            results.blockedCalls++;
+            console.log(`🚫 Call ${i + 1}/500 blocked (${response.status})`);
+          } else {
+            console.log(`❌ Call ${i + 1}/500 failed (${response.status})`);
+          }
+          results.errors.push(`Call ${i + 1}: ${response.status} ${response.statusText}`);
+        }
+        
+        // Add small delay to avoid overwhelming
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Update results every 50 calls
+        if ((i + 1) % 50 === 0) {
+          setTestResults({
+            ...results,
+            currentCall: i + 1,
+            averageResponseTime: results.responseTimes.reduce((a, b) => a + b, 0) / results.responseTimes.length
+          });
+        }
+        
+      } catch (error) {
+        results.failedCalls++;
+        results.errors.push(`Call ${i + 1}: ${error}`);
+        console.error(`❌ Call ${i + 1}/500 error:`, error);
+      }
+    }
+    
+    const endTime = Date.now();
+    const totalTime = endTime - results.startTime;
+    results.averageResponseTime = results.responseTimes.reduce((a, b) => a + b, 0) / results.responseTimes.length;
+    
+    const finalResults = {
+      ...results,
+      totalTime,
+      successRate: (results.successfulCalls / results.totalCalls) * 100,
+      blockRate: (results.blockedCalls / results.totalCalls) * 100,
+      callsPerSecond: results.totalCalls / (totalTime / 1000)
+    };
+    
+    setTestResults(finalResults);
+    setIsTesting(false);
+    
+    console.log('📊 Test Results:', finalResults);
+    toast.success('API Test Complete!', {
+      description: `${results.successfulCalls}/${results.totalCalls} calls successful`,
+      duration: 5000
+    });
   };
 
 
@@ -210,6 +305,22 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
               <TrendingUp className="w-4 h-4 mr-2" />
               Trending
             </Button>
+            <Button
+              onClick={runAPILimitationTest}
+              disabled={isTesting}
+              className="Poppins rounded-full bg-red-500 hover:bg-red-600 text-white"
+            >
+              {isTesting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Testing...
+                </>
+              ) : (
+                <>
+                  🧪 Test API Limits (500 calls)
+                </>
+              )}
+            </Button>
           </div>
 
           {/* Search Tab */}
@@ -299,6 +410,97 @@ export default function YouTubeMusicPlayer({ isOpen, onClose }: MusicPlayerProps
                     </Button>
                   </div>
                 ))
+              )}
+            </div>
+          )}
+
+          {/* Test Results Display */}
+          {testResults && (
+            <div className="mt-6 p-4 bg-foreground/5 rounded-2xl border border-foreground/20">
+              <h3 className="Space text-lg font-semibold mb-4">🧪 API Test Results</h3>
+              
+              {isTesting ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-foreground"></div>
+                    <span className="Poppins text-sm">Testing... {testResults.currentCall || 0}/500 calls</span>
+                  </div>
+                  <div className="w-full bg-foreground/10 rounded-full h-2">
+                    <div 
+                      className="bg-green-400 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${((testResults.currentCall || 0) / 500) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-foreground/70">Successful:</span>
+                      <span className="ml-2 font-semibold text-green-500">{testResults.successfulCalls}</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Failed:</span>
+                      <span className="ml-2 font-semibold text-red-500">{testResults.failedCalls}</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Blocked:</span>
+                      <span className="ml-2 font-semibold text-orange-500">{testResults.blockedCalls}</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Avg Time:</span>
+                      <span className="ml-2 font-semibold">{Math.round(testResults.averageResponseTime || 0)}ms</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-green-100 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{testResults.successfulCalls}</div>
+                      <div className="text-sm text-green-700">Successful Calls</div>
+                    </div>
+                    <div className="bg-red-100 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">{testResults.failedCalls}</div>
+                      <div className="text-sm text-red-700">Failed Calls</div>
+                    </div>
+                    <div className="bg-orange-100 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">{testResults.blockedCalls}</div>
+                      <div className="text-sm text-orange-700">Blocked Calls</div>
+                    </div>
+                    <div className="bg-blue-100 p-3 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{testResults.successRate.toFixed(1)}%</div>
+                      <div className="text-sm text-blue-700">Success Rate</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-foreground/70">Total Time:</span>
+                      <span className="ml-2 font-semibold">{Math.round(testResults.totalTime / 1000)}s</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Calls/Second:</span>
+                      <span className="ml-2 font-semibold">{testResults.callsPerSecond.toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Avg Response:</span>
+                      <span className="ml-2 font-semibold">{Math.round(testResults.averageResponseTime)}ms</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/70">Block Rate:</span>
+                      <span className="ml-2 font-semibold">{testResults.blockRate.toFixed(1)}%</span>
+                    </div>
+                  </div>
+
+                  {testResults.errors.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Recent Errors:</h4>
+                      <div className="max-h-32 overflow-y-auto text-xs text-red-600">
+                        {testResults.errors.slice(-10).map((error, index) => (
+                          <div key={index} className="mb-1">{error}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
